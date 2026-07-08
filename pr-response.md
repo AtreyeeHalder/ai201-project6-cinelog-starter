@@ -18,8 +18,11 @@
 **How I verified:** Ensured pattern consistency by following the same pattern as `add_to_collection()` deduplication handling in `services/collection_service.py`
 
 ## Comment 3 — Missing test
-**What I did:**
-**How I verified:**
+**Comment:** Please add a test for the case where film_id doesn't exist in the database. Look at the existing tests in test_collection.py — the pattern is there.
+
+**What I did:** Created a new file `tests/test_watchlist.py`. Wrote `test_add_to_watchlist_nonexistent_film_raises` test for `add_to_watchlist()` to ensure `FilmNotFoundError` is raised when adding a film_id that doesn't exist in the database. Followed the same fixture and assertion structure as `test_add_to_collection_nonexistent_film_raises` in `tests/test_collection.py`.
+
+**How I verified:** Ran the test `pytest tests/test_watchlist.py -v` to confirm it passes. Ran the full test suite `pytest tests/ -v` to confirm nothing is broken.
 
 ## Comment 4 — Default visibility
 **My position:**
