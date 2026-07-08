@@ -5,12 +5,17 @@
 
 ## Comment 1 — Rename
 **Comment on line R12 of `services/watchlist_service.py`:** `save_to_watchlist()` should follow the project's naming convention. Compare with `add_to_collection()` — the pattern here is `verb_to_noun`. Please rename to `add_to_watchlist()` and update all call sites.
+
 **What I did:** Renamed `save_to_watchlist()` to `add_to_watchlist()` in `services/watchlist_service.py` and updated all call sites.
+
 **How I verified:** Conducted project-wide search of `save_to_watchlist` in VS Code to confirm no call sites are missed.
 
 ## Comment 2 — Deduplication
-**What I did:**
-**How I verified:**
+**Comment on line R30 of `services/watchlist_service.py`:** What happens if a user calls this with a film that's already on their watchlist? The current implementation would add a duplicate entry. Please handle this case.
+
+**What I did:** Added deduplication logic to `add_to_watchlist()` in `services/watchlist_service.py` by raising an `AlreadyInWatchlistError` with the message "Film '{film_id}' is already in this user's watchlist" if the film is already in the user's watchlist.
+
+**How I verified:** Ensured pattern consistency by following the same pattern as `add_to_collection()` deduplication handling in `services/collection_service.py`
 
 ## Comment 3 — Missing test
 **What I did:**
