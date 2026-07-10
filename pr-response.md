@@ -13,9 +13,9 @@
 ## Comment 2 — Deduplication
 **Comment on line R30 of `services/watchlist_service.py`:** What happens if a user calls this with a film that's already on their watchlist? The current implementation would add a duplicate entry. Please handle this case.
 
-**What I did:** Added deduplication logic to `add_to_watchlist()` in `services/watchlist_service.py` by raising an `AlreadyInWatchlistError` with the message "Film '{film_id}' is already in this user's watchlist" if the film is already in the user's watchlist.
+**What I did:** Added deduplication logic to `add_to_watchlist()` in `services/watchlist_service.py` by raising an `AlreadyInWatchlistError` with the message "Film '{film_id}' is already in this user's watchlist" if the film is already in the user's watchlist. Ensured pattern consistency by following the same pattern as `add_to_collection()` deduplication handling in `services/collection_service.py`.
 
-**How I verified:** Ensured pattern consistency by following the same pattern as `add_to_collection()` deduplication handling in `services/collection_service.py`
+**How I verified:** Wrote and ran `test_add_to_watchlist_duplicate_raises` test for `add_to_watchlist()` in `tests/test_watchlist.py` to ensure that adding the same film twice raises `AlreadyInWatchlistError`, not silently create a duplicate entry. Ran the full test suite `pytest tests/ -v` to confirm nothing is broken.
 
 ## Comment 3 — Missing test
 **Comment:** Please add a test for the case where film_id doesn't exist in the database. Look at the existing tests in test_collection.py — the pattern is there.
