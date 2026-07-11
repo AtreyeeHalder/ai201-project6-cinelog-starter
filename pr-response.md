@@ -18,16 +18,20 @@
 **How I verified:** Wrote and ran `test_add_to_watchlist_duplicate_raises` test for `add_to_watchlist()` in `tests/test_watchlist.py` to ensure that adding the same film twice raises `AlreadyInWatchlistError`, not silently create a duplicate entry. Ran the full test suite `pytest tests/ -v` to confirm nothing is broken.
 
 ## Comment 3 — Missing test
-**Comment:** Please add a test for the case where film_id doesn't exist in the database. Look at the existing tests in test_collection.py — the pattern is there.
+**Comment:** Please add a test for the case where `film_id` doesn't exist in the database. Look at the existing tests in `test_collection.py` — the pattern is there.
 
 **What I did:** Created a new file `tests/test_watchlist.py`. Wrote `test_add_to_watchlist_nonexistent_film_raises` test for `add_to_watchlist()` to ensure `FilmNotFoundError` is raised when adding a film_id that doesn't exist in the database. Followed the same fixture and assertion structure as `test_add_to_collection_nonexistent_film_raises` in `tests/test_collection.py`.
 
 **How I verified:** Ran the test `pytest tests/test_watchlist.py -v` to confirm it passes. Ran the full test suite `pytest tests/ -v` to confirm nothing is broken.
 
 ## Comment 4 — Default visibility
-**My position:**
-**Reasoning:**
-**Tradeoff acknowledged:**
+**Comment:** I notice watchlists default to `public=True`. We don't have a documented decision on default visibility for user lists. Before I can approve this, I need you to add a note to your PR description explaining your reasoning. I want to make sure we're being intentional here, not just inheriting a default.
+
+**My position:** Watchlists should default to `public=True`
+
+**Reasoning:** A watchlist is social, signalling a "films I want to watch" list so that users can interact with each other based on their interests and find new films more easily. Thus, it is meant to be shared and discovered. Making it public by default supports the discovery/recommendation use cases the feature is intended for. The data exposed is low-sensitivity, not private account information.
+
+**Tradeoff acknowledged:** Public-by-default is less conservative than privacy-by-default. Some users may not expect their saved films to be visible to others. I am accepting that tradeoff because the public column is per-entry and can be toggled, so users retain control. Moreover, discoverability is a core goal of the watchlist feature.
 
 ## Comment 5 — Sort order
 **My position:**
