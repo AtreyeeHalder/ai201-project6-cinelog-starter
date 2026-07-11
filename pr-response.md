@@ -51,5 +51,9 @@
 
 **How I verified no conflict remains:** Confirmed the branch is linear with `git log --oneline --graph --merges origin/main..HEAD`, which returned no output (no merge commits). Also verified via `git grep -inE "integer|int\)" -- models/ services` that no remaining code or docs reference integer IDs.
 
+## Screenshot of `git --no-pager log --oneline`
+
+![Screenshot of git --no-pager log --oneline](image.png)
+
 ## PR Description
 <!-- Written at the end — feature overview, design decisions, manual testing steps -->
