@@ -43,9 +43,11 @@
 **Engagement with reviewer's point:** The reviewer's argument is that most users want to see what they added recently, and I think that is right for this feature specifically. The main case for alphabetical is lookup (finding a known title in a long list) but that is better served by search/filter than by default sort order, and it's a weaker fit for a watchlist than for, say, a reference catalog. On top of that, a watchlist is inherently a queue of intent ("things I mean to get to"), and recency is the more meaningful signal for a queue than title — the film I just added is the one most likely to be on my mind.
 
 ## Comment 6 — Rebase
-**What conflicted:**
-**How I resolved it:**
-**How I verified no conflict remains:**
+**What conflicted:** I ran `git fetch origin` then `git rebase origin/main`, which reported "Successfully rebased and updated" — no automatic merge conflicts occurred, because my changes and the new commits on `main` did not touch the same lines. However, the UUID concern still applied: `services/watchlist_service.py` had a stale docstring describing `film_id (int): ID of the film. (Note: integer — pre-refactor)`, a leftover from before the schema moved to UUIDs.
+
+**How I resolved it:** The models already use UUIDs (`db.Column(db.String(36), ..., default=generate_uuid)` in `models.py`), so the runtime code was already UUID-correct. I updated the stale docstring in `services/watchlist_service.py` to `film_id (str): UUID of the film.` so the documentation matches the UUID-based schema.
+
+**How I verified no conflict remains:** Confirmed the branch is linear with `git log --oneline --graph --merges origin/main..HEAD`, which returned no output (no merge commits). Also verified via `git grep -inE "integer|int\)" -- models/ services` that no remaining code or docs reference integer IDs.
 
 ## PR Description
 <!-- Written at the end — feature overview, design decisions, manual testing steps -->
