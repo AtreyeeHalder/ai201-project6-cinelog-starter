@@ -34,9 +34,13 @@
 **Tradeoff acknowledged:** Public-by-default is less conservative than privacy-by-default. Some users may not expect their saved films to be visible to others. I am accepting that tradeoff because the public column is per-entry and can be toggled, so users retain control. Moreover, discoverability is a core goal of the watchlist feature.
 
 ## Comment 5 — Sort order
-**My position:**
-**Reasoning:**
-**Engagement with reviewer's point:**
+**Comment on line R50 of `services/watchlist_service.py`:** I'd prefer watchlists to default to "date added" order rather than alphabetical. Most users want to see what they added recently. I'm open to discussion if you see it differently — but let's make a decision and document it.
+
+**My position:** I agree with the maintainer, watchlists should default to "date added" order, newest first. I changed `get_watchlist()` in `services/watchlist_service.py` from `order_by(Film.title.asc())` to `order_by(WatchlistEntry.date_added.desc())`.
+
+**Reasoning:** In addition to the maintainers's user-behavior point, the deciding factor for me is codebase consistency. `get_collection()` in `services/collection_service.py` already sorts by `CollectionEntry.date_added.desc()`. Watchlist and collection are sibling features that users will see side by side, so having one default to recency and the other to alphabetical is a surprising inconsistency. Aligning the watchlist with the established collection convention makes the two features behave predictably and removes a divergence a future reader would otherwise have to explain.
+
+**Engagement with reviewer's point:** The reviewer's argument is that most users want to see what they added recently, and I think that is right for this feature specifically. The main case for alphabetical is lookup (finding a known title in a long list) but that is better served by search/filter than by default sort order, and it's a weaker fit for a watchlist than for, say, a reference catalog. On top of that, a watchlist is inherently a queue of intent ("things I mean to get to"), and recency is the more meaningful signal for a queue than title — the film I just added is the one most likely to be on my mind.
 
 ## Comment 6 — Rebase
 **What conflicted:**
