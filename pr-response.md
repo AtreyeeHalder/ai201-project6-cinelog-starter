@@ -1,7 +1,15 @@
 # PR Response Doc — CineLog Watchlist Feature
 
 ## AI Usage
-<!-- Fill in at the end — how you used AI tools during this project -->
+
+I used Claude Code as a working assistant on this project. Specific uses:
+
+- **Codebase orientation.** Before writing any watchlist code, I asked the AI to locate the existing collection feature and summarize its conventions, since the reviewer's comments repeatedly pointed at `add_to_collection()` / `get_collection()` as the pattern to mirror. This is how I found that `get_collection()` already sorts by `CollectionEntry.date_added.desc()` (which became the deciding argument in Comment 5) and how `add_to_collection()` handles deduplication (mirrored in Comment 2). I verified each claim by opening `services/collection_service.py` myself rather than taking the summary on faith.
+- **Verifying commit-message format.** I had the AI check my commit messages against the Conventional Commits style already used in the repo's history (`fix:`, `docs:`) before committing.
+- **Verifying the rebase reasoning (Comment 6).** I asked the AI to sanity-check that a clean rebase with no textual conflicts could still leave semantically stale references, which is what pointed me at the leftover integer-ID docstring. I then confirmed with `git grep -inE "integer|int\)"` myself.
+- **Writing Assistance:** I used Claude Code to refine and polish my notes on pr-response.md.
+
+**Comment 4 and Comment 5.** I used AI as a sounding board while drafting both arguments, but the substance is mine. For Comment 4 (default visibility) I asked the AI to argue the opposite position (privacy-by-default) so I could stress-test my own reasoning. It surfaced the "users may not expect saved films to be visible" objection, which I did not dismiss; I incorporated it as the explicit tradeoff I acknowledge (the per-entry, toggleable `public` flag is my answer to it). For Comment 5 (sort order), the AI's first-pass argument leaned entirely on the user-behavior point the reviewer had already made ("people want to see recent additions"). I judged that too weak on its own (it just restates the reviewer) so my final argument leads with codebase consistency (the `get_collection()` precedent) as the deciding factor and treats user behavior as secondary, plus adds the "watchlist is a queue of intent" framing that the AI did not propose.
 
 ## Comment 1 — Rename
 **Comment on line R12 of `services/watchlist_service.py`:** `save_to_watchlist()` should follow the project's naming convention. Compare with `add_to_collection()` — the pattern here is `verb_to_noun`. Please rename to `add_to_watchlist()` and update all call sites.
@@ -57,3 +65,50 @@
 
 ## PR Description
 <!-- Written at the end — feature overview, design decisions, manual testing steps -->
+
+### Watchlist Feature Overview
+
+Lets a user keep a personal watchlist of films. A user can view their watchlist and add films to it through a REST endpoint. Adding a film that's already on the list is rejected at the data layer, so a film never appears twice for the same user. The watchlist is returned newest-added first.
+
+### Design Decisions
+
+- **Default Visibility:** Set to `public=True` to encourage social engagement and community discovery across the platform, with a future-proofing acknowledgement of user privacy toggles (the public flag is per-entry and can be toggled).
+- **Sort Order:** Implemented a default sort by `date_added` (descending) so users always see their newest additions first, matching modern streaming platform standards and staying consistent with how the sibling collection feature sorts.
+
+### Manual Testing Steps
+
+1. Seed a user and a film (writes to `cinelog.db`):
+
+    ```
+    python
+    >>> from app import create_app, db
+    >>> from models import User, Film
+    >>> app = create_app()
+    >>> with app.app_context():
+    ...     u = User(username="testuser", email="test@example.com")
+    ...     f = Film(title="Paddington 2", year=2017, genre="Comedy")
+    ...     db.session.add_all([u, f]); db.session.commit()
+    ...     print("USER_ID:", u.id, "FILM_ID:", f.id)
+    ```
+
+    Note the printed USER_ID and FILM_ID.
+
+2. Start the app (PowerShell):
+    
+    `$env:FLASK_APP = "app"; flask run`
+
+    App serves on `http://127.0.0.1:5000`.
+
+3. View the empty watchlist, expect []:
+
+    `curl.exe http://127.0.0.1:5000/watchlist/<USER_ID>`
+
+4. Add a film, expect `201` and the new entry (`public: true`):
+
+    `curl.exe -X POST http://127.0.0.1:5000/watchlist/<USER_ID>/add -H "Content-Type: application/json" -d "{\"film_id\": \"<FILM_ID>\"}"`
+
+5. View again, the film appears, newest-first:
+
+    `curl.exe http://127.0.0.1:5000/watchlist/<USER_ID>`
+
+6. Add the same film again: deduplication prevents a second entry (re-running step 5 still shows the film only once).
